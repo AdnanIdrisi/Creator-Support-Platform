@@ -1,0 +1,13 @@
+import { BarChart3, Coffee, ExternalLink, LayoutDashboard, LogOut, Settings2, UserRound } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../features/auth/authSlice";
+import { Avatar, Button } from "./ui";
+
+export default function AppShell({ children }) {
+  const user = useSelector((state) => state.auth.user); const dispatch = useDispatch(); const navigate = useNavigate();
+  const linkClass = ({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${isActive ? "bg-sky text-navy" : "text-muted hover:bg-sky/70 hover:text-navy"}`;
+  const signOut = async () => { await dispatch(logout()); navigate("/login"); };
+  return <div className="min-h-screen bg-[#f7faff] lg:flex"><aside className="border-b border-line bg-white px-5 py-4 lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col lg:border-b-0 lg:border-r"><div className="flex items-center justify-between lg:block"><div className="flex items-center gap-2 font-display text-xl font-extrabold text-ink"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-navy text-white"><Coffee size={18} /></span>pourly<span className="text-navy">.</span></div><div className="mt-1 hidden text-xs text-muted lg:block">Creator workspace</div><nav className="hidden space-y-1 pt-10 lg:block"><NavLink to="/dashboard" className={linkClass}><LayoutDashboard size={17} />Overview</NavLink><NavLink to="/dashboard/earnings" className={linkClass}><BarChart3 size={17} />Earnings</NavLink><NavLink to="/dashboard/profile" className={linkClass}><Settings2 size={17} />Profile</NavLink></nav><div className="hidden border-t border-line pt-5 lg:mt-auto lg:block"><div className="mb-4 flex items-center gap-3"><Avatar name={user?.name} size="sm" /><div className="min-w-0"><div className="truncate text-sm font-bold text-ink">{user?.name}</div><div className="truncate text-xs text-muted">@{user?.username}</div></div></div><button onClick={signOut} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-muted hover:bg-red-50 hover:text-red-600"><LogOut size={17} />Sign out</button></div></div></aside><main className="min-h-screen lg:ml-64">{children}</main></div>;
+}
+export function MobileTopBar() { const user = useSelector((state) => state.auth.user); return <div className="flex items-center justify-between border-b border-line bg-white px-5 py-4 lg:hidden"><div className="flex items-center gap-2 font-display font-extrabold text-ink"><Coffee size={18} className="text-navy" />pourly.</div><div className="flex items-center gap-2 text-xs font-semibold text-muted"><UserRound size={15} />{user?.name}</div></div>; }

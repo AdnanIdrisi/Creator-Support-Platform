@@ -1,0 +1,2 @@
+import { Link } from "react-router-dom";
+export default function NotFound() { return <div className="flex min-h-screen items-center justify-center bg-[#f7faff] p-6 text-center"><div><div className="font-display text-6xl font-extrabold text-navy">404</div><h1 className="mt-3 font-display text-2xl font-extrabold">This page took a coffee break.</h1><p className="mt-2 text-muted">The link you followed does not exist.</p><Link className="mt-6 inline-block font-bold text-navy hover:underline" to="/">Back to dashboard</Link></div></div>; }

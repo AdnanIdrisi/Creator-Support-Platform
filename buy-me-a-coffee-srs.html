@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Buy Me a Coffee — SRS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:ital,wght@0,300;0,600;0,700;0,900;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Design Tokens ── */
+:root {
+  --ink:#0E0F14; --paper:#F5F2EB; --paper2:#EDE9DF; --paper3:#E4DFD3; --rule:#D4CEBC;
+  --muted:#6B6455; --accent:#C84B1F; --accent2:#1A6B4A; --accent3:#1B4587; --gold:#B8860B;
+  --code-bg:#1A1C24; --code-text:#E2DCCC; --flag-c:#2F78A8; --val-c:#B8621A;
+  --body:#2A2720; --night:#0E0F14;
+  --note-bg:#FEF9EC; --note-border:#EDD97A; --note-text:#5C4A00; --note-strong:#3D3000;
+  --warn-bg:#FEF2F2; --warn-border:#FCA5A5; --warn-text:#7F1D1D;
+  --serif:'Fraunces', Georgia, 'Times New Roman', serif;
+  --sans:'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono:'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top, 0px);
+  padding-bottom:env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink:#ECE6D8; --paper:#15161C; --paper2:#1C1E26; --paper3:#252833; --rule:#363A48;
+    --muted:#A29A89; --accent:#E2673C; --accent2:#3FA57A; --accent3:#79A3E6; --gold:#D4A437;
+    --flag-c:#6FB3DD; --val-c:#F4A261; --body:#D6CFBF; --night:#0B0C10;
+    --note-bg:#2A2412; --note-border:#6B5A1E; --note-text:#EBD9A0; --note-strong:#FFF0C2;
+    --warn-bg:#2C1616; --warn-border:#7A2E2E; --warn-text:#F4B4B4;
+  }
+}
+:root[data-theme="dark"] {
+  --ink:#ECE6D8; --paper:#15161C; --paper2:#1C1E26; --paper3:#252833; --rule:#363A48;
+  --muted:#A29A89; --accent:#E2673C; --accent2:#3FA57A; --accent3:#79A3E6; --gold:#D4A437;
+  --flag-c:#6FB3DD; --val-c:#F4A261; --body:#D6CFBF; --night:#0B0C10;
+  --note-bg:#2A2412; --note-border:#6B5A1E; --note-text:#EBD9A0; --note-strong:#FFF0C2;
+  --warn-bg:#2C1616; --warn-border:#7A2E2E; --warn-text:#F4B4B4;
+}
+*, *::before, *::after { box-sizing:border-box; }
+html { scroll-behavior:smooth; scroll-padding-top:env(safe-area-inset-top, 0px); background:var(--paper); }
+body { background-color:var(--paper); color:var(--ink); font-family:var(--sans); font-size:15px; line-height:1.7; margin:0; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } * { animation:none !important; transition:none !important; } }
+:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+.animate-fade-up { animation:fadeUp 0.4s ease both; }
+
+/* ── Layout ── */
+.layout-container { display:flex; min-height:100%; }
+.sidebar {
+  width:260px; flex-shrink:0; background-color:var(--night); position:sticky; top:env(safe-area-inset-top, 0px);
+  height:calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  overflow-y:auto; padding:32px 0 40px;
+}
+.main-content { flex:1; max-width:calc(100% - 260px); padding:56px 56px 80px; min-width:0; }
+.inner { max-width:880px; }
+
+/* ── Sidebar ── */
+.nav-brand { padding:0 24px; margin-bottom:24px; }
+.nav-brand .logo { font-family:var(--serif); font-size:18px; font-weight:700; color:#FFFFFF; }
+.nav-brand .logo .accent-dot { color:#E2673C; }
+.nav-brand .sub { font-family:var(--mono); font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:0.06em; margin-top:2px; }
+.nav-group-label { font-family:var(--mono); font-size:9px; color:rgba(255,255,255,0.25); letter-spacing:0.12em; text-transform:uppercase; padding:0 24px; margin-top:16px; margin-bottom:4px; }
+.nav-link { display:flex; align-items:center; gap:8px; padding:10px 24px; font-family:var(--sans); font-size:12.5px; color:rgba(255,255,255,0.5); border-left:2px solid transparent; text-decoration:none; transition:color 150ms ease, background-color 150ms ease; white-space:nowrap; }
+.nav-link:hover { color:#FFFFFF; background-color:rgba(255,255,255,0.04); }
+.nav-link.active { color:#FFFFFF; border-left-color:#C84B1F; background-color:rgba(200,75,31,0.08); }
+.nav-num { width:18px; height:18px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background-color:rgba(255,255,255,0.08); font-family:var(--mono); font-size:9px; border-radius:4px; color:inherit; }
+.nav-link:hover .nav-num, .nav-link.active .nav-num { background-color:#C84B1F; color:#FFFFFF; }
+
+/* ── Hero ── */
+.hero { margin-bottom:64px; padding-bottom:40px; border-bottom:1px solid var(--rule); }
+.hero-eyebrow { font-family:var(--mono); font-size:11px; color:var(--accent); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:14px; }
+.hero h1 { font-family:var(--serif); font-size:clamp(36px, 5vw, 58px); font-weight:900; color:var(--ink); line-height:1.05; letter-spacing:-0.02em; margin:0 0 18px; }
+.hero h1 em { font-style:normal; color:var(--accent); }
+.hero-desc { font-family:var(--sans); font-size:16px; color:var(--muted); max-width:560px; line-height:1.65; margin:0 0 22px; }
+.hero-tags { display:flex; flex-wrap:wrap; gap:8px; }
+.hero-tag { font-family:var(--mono); font-size:11px; color:var(--muted); border:1px solid var(--rule); border-radius:9999px; padding:2px 12px; }
+
+/* ── Sections ── */
+.section-block { margin-bottom:72px; }
+.section-header { display:flex; align-items:flex-start; gap:16px; margin-bottom:28px; }
+.section-header-text { padding-top:4px; }
+.section-num-big { font-family:var(--serif); font-size:48px; font-weight:900; color:var(--rule); user-select:none; line-height:1; }
+.section-title { font-family:var(--serif); font-size:26px; font-weight:700; color:var(--ink); line-height:1.2; }
+.section-subtitle { font-family:var(--sans); font-size:13px; color:var(--muted); margin-top:4px; }
+h3 { font-family:var(--serif); font-size:18px; font-weight:600; color:var(--ink); margin-top:28px; margin-bottom:12px; }
+h4 { font-family:var(--mono); font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin:24px 0 8px; font-weight:500; }
+p { font-family:var(--sans); font-size:14.5px; color:var(--body); line-height:1.7; margin:0 0 12px; max-width:72ch; }
+code.inline-code, p code, td code, li code { font-family:var(--mono); font-size:12px; color:var(--accent); background-color:var(--paper3); border:1px solid var(--rule); border-radius:4px; padding:2px 4px; white-space:nowrap; }
+ul.plain { margin:8px 0 12px; padding-left:20px; color:var(--body); font-size:14.5px; }
+ul.plain li { margin-bottom:6px; }
+
+/* ── Boxes ── */
+.concept-box { background-color:var(--paper2); border-left:3px solid var(--accent3); border-radius:0 8px 8px 0; padding:16px 20px; margin:16px 0; }
+.concept-box-label { font-family:var(--mono); font-size:9px; color:var(--accent3); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:8px; }
+.concept-box-text { font-family:var(--sans); font-size:14px; color:var(--ink); line-height:1.65; margin:0; max-width:none; }
+.note-box, .warning-box { border-radius:8px; padding:12px 16px; margin:16px 0; display:flex; gap:12px; align-items:flex-start; }
+.note-box { background-color:var(--note-bg); border:1px solid var(--note-border); }
+.warning-box { background-color:var(--warn-bg); border:1px solid var(--warn-border); }
+.note-box-icon, .warning-box-icon { font-size:18px; line-height:1; margin-top:2px; }
+.note-box-text { font-size:13px; color:var(--note-text); margin:0; max-width:none; }
+.note-box-text strong { color:var(--note-strong); }
+.warning-box-text { font-size:13px; color:var(--warn-text); margin:0; max-width:none; }
+
+/* ── Badges ── */
+.badge { display:inline-block; font-family:var(--mono); font-size:10px; font-weight:600; color:#FFFFFF; text-transform:uppercase; letter-spacing:0.06em; padding:2px 10px; border-radius:4px; white-space:nowrap; }
+.badge-accent { background-color:#C84B1F; }
+.badge-green { background-color:#1A6B4A; }
+.badge-blue { background-color:#1B4587; }
+.badge-gold { background-color:#9A700A; }
+
+/* ── Code ── */
+.code-block { border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.06); margin:16px 0; }
+.code-header { display:flex; align-items:center; justify-content:space-between; padding:8px 16px; background-color:#13141A; border-bottom:1px solid rgba(255,255,255,0.06); }
+.code-label { font-family:var(--mono); font-size:10px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.08em; }
+.code-copy-btn { background:none; border:none; font-family:var(--mono); font-size:10px; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:0.06em; cursor:pointer; transition:color 150ms ease; }
+.code-copy-btn:hover { color:rgba(255,255,255,0.7); }
+.code-pre { background-color:var(--code-bg); color:var(--code-text); font-family:var(--mono); font-size:12.5px; line-height:1.75; padding:16px 20px; overflow-x:auto; margin:0; }
+.token-command { color:#87CEEB; font-weight:bold; }
+.token-flag { color:#5BA4CF; }
+.token-val { color:#F4A261; }
+.token-string { color:#98C379; }
+.token-comment { color:rgba(255,255,255,0.35); font-style:italic; }
+.token-yaml-key { color:#C678DD; }
+.token-operator { color:#E5C07B; }
+
+/* ── Tables ── */
+.table-wrap { overflow-x:auto; margin:16px 0; }
+.flag-table, .compare-table { width:100%; border-collapse:collapse; font-family:var(--sans); font-size:14px; }
+.flag-table th { font-family:var(--mono); font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; background-color:var(--paper3); text-align:left; padding:8px 12px; border:1px solid var(--rule); font-weight:500; }
+.flag-table td { padding:8px 12px; border:1px solid var(--rule); color:var(--body); vertical-align:top; font-size:13.5px; }
+.flag-table tbody tr, .compare-table tbody tr { transition:background-color 100ms ease; }
+.flag-table tbody tr:hover, .compare-table tbody tr:hover { background-color:var(--paper2); }
+.flag-name { font-family:var(--mono); font-size:12px; font-weight:600; color:var(--flag-c); white-space:nowrap; }
+.flag-val { font-family:var(--mono); font-size:11px; color:var(--val-c); white-space:nowrap; }
+.compare-table th { background-color:var(--night); color:#FFFFFF; font-size:13px; font-weight:600; text-align:left; padding:12px 16px; border:1px solid var(--night); }
+.compare-table td { font-size:13px; padding:12px 16px; border:1px solid var(--rule); color:var(--body); vertical-align:top; }
+.compare-table .cell-title { font-weight:600; color:var(--ink); white-space:nowrap; }
+.compare-table .cell-muted { color:var(--muted); }
+.compare-table .cell-highlight { color:var(--accent2); font-weight:500; }
+.req-id { font-family:var(--mono); font-size:11.5px; font-weight:600; color:var(--accent); white-space:nowrap; }
+.group-row td { background-color:var(--paper3); font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); padding:6px 12px; }
+
+/* ── Flow & scale diagrams ── */
+.flow-diagram { display:flex; flex-direction:column; margin:16px 0; }
+.flow-step { display:flex; gap:16px; }
+.flow-connector { display:flex; flex-direction:column; align-items:center; }
+.flow-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:6px; }
+.flow-dot-accent { background-color:var(--accent); }
+.flow-dot-green { background-color:var(--accent2); }
+.flow-dot-blue { background-color:var(--accent3); }
+.flow-line { width:2px; background-color:var(--rule); flex:1; margin:4px 0; }
+.flow-content { padding-bottom:16px; }
+.flow-title { font-size:14px; font-weight:600; color:var(--ink); }
+.flow-desc { font-size:12.5px; color:var(--muted); margin-top:2px; }
+.scale-diagram { background-color:var(--paper2); border:1px solid var(--rule); border-radius:10px; padding:16px 20px; margin:16px 0; font-family:var(--mono); font-size:12px; line-height:2; color:var(--muted); overflow-x:auto; white-space:nowrap; }
+.scale-diagram .highlight { color:var(--ink); font-weight:bold; }
+.scale-diagram .green { color:var(--accent2); }
+.scale-diagram .red { color:var(--accent); }
+
+/* ── Day plan ── */
+.day-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:16px; margin:16px 0; }
+.day-card { border:1px solid var(--rule); border-top:3px solid var(--accent); border-radius:0 0 8px 8px; padding:16px; background:var(--paper2); }
+.day-card:nth-child(2) { border-top-color:var(--accent3); }
+.day-card:nth-child(3) { border-top-color:var(--gold); }
+.day-card:nth-child(4) { border-top-color:var(--accent2); }
+.day-card h5 { font-family:var(--serif); font-size:17px; font-weight:700; margin:8px 0 6px; color:var(--ink); }
+.day-card ul { margin:0; padding-left:18px; font-size:13px; color:var(--body); }
+.day-card li { margin-bottom:4px; }
+
+.divider { border:none; border-top:1px solid var(--rule); margin:40px 0; }
+
+/* ── Quiz ── */
+.quiz-box { background-color:var(--night); border-radius:12px; padding:24px; margin:32px 0; border:1px solid rgba(255,255,255,0.08); }
+.quiz-question { font-size:15px; color:#FFFFFF; font-weight:500; line-height:1.6; margin-bottom:20px; max-width:none; }
+.quiz-options { display:flex; flex-direction:column; gap:12px; }
+.quiz-option { text-align:left; font-family:var(--sans); font-size:13.5px; color:rgba(255,255,255,0.7); background:transparent; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:12px 16px; cursor:pointer; transition:all 200ms ease; }
+.quiz-option:hover:not(:disabled) { border-color:#C84B1F; color:#FFFFFF; background-color:rgba(200,75,31,0.08); }
+.quiz-option:disabled { cursor:not-allowed; }
+.quiz-option.correct { border-color:#1A6B4A !important; background-color:rgba(26,107,74,0.25) !important; color:#FFFFFF !important; opacity:1 !important; }
+.quiz-option.incorrect { border-color:#C84B1F !important; background-color:rgba(200,75,31,0.2) !important; color:#FFFFFF !important; opacity:1 !important; }
+.quiz-feedback { margin-top:16px; font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; }
+.quiz-feedback.correct { color:#3FA57A; }
+.quiz-feedback.incorrect { color:#E2673C; }
+.quiz-feedback.hidden { display:none; }
+
+.site-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--muted); border-top:2px solid var(--rule); padding-top:16px; margin-top:64px; }
+
+@media (max-width: 768px) {
+  .layout-container { flex-direction:column; }
+  .sidebar { position:sticky; top:0; width:100%; height:auto; padding:12px 0 0; display:flex; align-items:center; overflow-x:auto; overflow-y:hidden; z-index:5; padding-top:calc(12px + env(safe-area-inset-top, 0px)); margin-top:calc(-1 * env(safe-area-inset-top, 0px)); }
+  .nav-brand { margin-bottom:12px; flex-shrink:0; }
+  .nav-brand .sub, .nav-group-label { display:none; }
+  .nav-link { border-left:none; border-bottom:2px solid transparent; padding:10px 14px 12px; }
+  .nav-link.active { border-bottom-color:#C84B1F; }
+  .main-content { max-width:100%; padding:32px 20px 64px; }
+  .section-num-big { font-size:36px; }
+}
+</style>
+</head>
+<body>
+<div class="layout-container">
+
+<nav class="sidebar" aria-label="Sections">
+  <div class="nav-brand">
+    <div class="logo">BuyMe<span class="accent-dot">.</span>Coffee</div>
+    <div class="sub">Sheryians Coding School</div>
+  </div>
+  <div class="nav-group-label">The system</div>
+  <a href="#overview" class="nav-link active"><span class="nav-num">1</span>Overview</a>
+  <a href="#entities" class="nav-link"><span class="nav-num">2</span>Entities &amp; indexes</a>
+  <a href="#endpoints" class="nav-link"><span class="nav-num">3</span>API endpoints</a>
+  <a href="#flows" class="nav-link"><span class="nav-num">4</span>Core flows</a>
+  <div class="nav-group-label">Requirements</div>
+  <a href="#functional" class="nav-link"><span class="nav-num">5</span>Functional</a>
+  <a href="#non-functional" class="nav-link"><span class="nav-num">6</span>Non-functional</a>
+  <a href="#out-of-scope" class="nav-link"><span class="nav-num">7</span>Out of scope</a>
+  <div class="nav-group-label">Delivery</div>
+  <a href="#plan" class="nav-link"><span class="nav-num">8</span>4-day build plan</a>
+</nav>
+
+<main class="main-content">
+<div class="inner">
+
+<header class="hero animate-fade-up">
+  <div class="hero-eyebrow">Software Requirements Specification · v1.0</div>
+  <h1>Buy Me a <em>Coffee</em></h1>
+  <p class="hero-desc">A backend for creators to accept small payments from their supporters. Creators get a public page, supporters buy them coffees through Razorpay, and creators see where the money came from on a dashboard.</p>
+  <div class="hero-tags">
+    <span class="hero-tag">4 days × 1.5 hrs</span>
+    <span class="hero-tag">Node + Express</span>
+    <span class="hero-tag">MongoDB + Mongoose</span>
+    <span class="hero-tag">Redis</span>
+    <span class="hero-tag">Razorpay (test mode)</span>
+  </div>
+</header>
+
+<!-- 01 OVERVIEW -->
+<section class="section-block" id="overview">
+  <div class="section-header">
+    <div class="section-num-big">01</div>
+    <div class="section-header-text">
+      <div class="section-title">Overview</div>
+      <div class="section-subtitle">What we are building, who uses it, and which topics it makes you practice</div>
+    </div>
+  </div>
+
+  <p>A creator signs up and gets a public page at <code>/u/:username</code>. Anyone visiting that page can buy the creator 1 to 5 coffees, pay through Razorpay, and leave a short message. The creator logs in to a dashboard that shows total earnings, earnings per day, and their biggest supporters.</p>
+  <p>This is a <strong>backend-centric</strong> project. The only frontend is one static test page served by Express that opens Razorpay Checkout, because the payment signature can only come from a real checkout. Everything else is tested with Postman.</p>
+
+  <h3>Actors</h3>
+  <div class="table-wrap">
+  <table class="compare-table">
+    <thead><tr><th>Actor</th><th>Has an account?</th><th>What they do</th></tr></thead>
+    <tbody>
+      <tr><td class="cell-title">Creator</td><td class="cell-highlight">Yes</td><td>Registers, logs in, edits their profile and coffee price, and views the dashboard.</td></tr>
+      <tr><td class="cell-title">Supporter</td><td class="cell-muted">No, pays as a guest</td><td>Opens a creator page, enters name, email and message, and pays for coffees.</td></tr>
+      <tr><td class="cell-title">Razorpay</td><td class="cell-muted">External system</td><td>Creates orders, collects the payment, and returns a signature the backend must verify.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Topics this project practices</h3>
+  <div class="table-wrap">
+  <table class="compare-table">
+    <thead><tr><th>Topic</th><th>Where it shows up in the project</th></tr></thead>
+    <tbody>
+      <tr><td class="cell-title">Access + refresh tokens</td><td>Creator login with a 15-minute access token, a 7-day refresh token in an httpOnly cookie, rotation on every refresh, and logout that revokes the session.</td></tr>
+      <tr><td class="cell-title">Payment gateway</td><td>Razorpay order creation with a server-computed amount, then HMAC signature verification before a payment is counted.</td></tr>
+      <tr><td class="cell-title">Aggregation pipeline</td><td>Dashboard summary, earnings per day (IST), top supporters, and the public page stats.</td></tr>
+      <tr><td class="cell-title">Indexing</td><td>Unique indexes, a compound index for dashboard queries, a TTL index that auto-deletes expired refresh tokens, and an <code>explain()</code> before/after comparison.</td></tr>
+      <tr><td class="cell-title">Caching</td><td>Redis cache-aside for the public page and leaderboard, with invalidation when a payment is verified or a profile changes.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note-box">
+    <div class="note-box-icon">💡</div>
+    <p class="note-box-text">Already covered before this project and assumed known: <strong>REST APIs, basic authentication, Mongoose models, Express middleware, frontend–backend integration and the Vite proxy.</strong> This SRS does not re-teach them.</p>
+  </div>
+</section>
+
+<!-- 02 ENTITIES -->
+<section class="section-block" id="entities">
+  <div class="section-header">
+    <div class="section-num-big">02</div>
+    <div class="section-header-text">
+      <div class="section-title">Entities &amp; indexes</div>
+      <div class="section-subtitle">Three collections, and the indexes each query depends on</div>
+    </div>
+  </div>
+
+  <h3>User (creator)</h3>
+  <div class="table-wrap">
+  <table class="flag-table">
+    <thead><tr><th>Field</th><th>Type</th><th>Rules</th></tr></thead>
+    <tbody>
+      <tr><td><span class="flag-name">name</span></td><td><span class="flag-val">String</span></td><td>Required, 2–50 chars.</td></tr>
+      <tr><td><span class="flag-name">username</span></td><td><span class="flag-val">String</span></td><td>Required, unique, lowercase, 3–30 chars, only <code>a-z 0-9 _</code>. Used in the public URL.</td></tr>
+      <tr><td><span class="flag-name">email</span></td><td><span class="flag-val">String</span></td><td>Required, unique, lowercase.</td></tr>
+      <tr><td><span class="flag-name">password</span></td><td><span class="flag-val">String</span></td><td>bcrypt hash. <code>select: false</code> so it is never returned by default.</td></tr>
+      <tr><td><span class="flag-name">bio</span></td><td><span class="flag-val">String</span></td><td>Optional, max 160 chars.</td></tr>
+      <tr><td><span class="flag-name">avatarUrl</span></td><td><span class="flag-val">String</span></td><td>Optional plain URL. No file upload.</td></tr>
+      <tr><td><span class="flag-name">coffeePrice</span></td><td><span class="flag-val">Number</span></td><td>Price of one coffee in rupees. Integer, ₹20–₹500, default ₹50.</td></tr>
+      <tr><td><span class="flag-name">createdAt / updatedAt</span></td><td><span class="flag-val">Date</span></td><td>Mongoose timestamps.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Support (one payment)</h3>
+  <div class="table-wrap">
+  <table class="flag-table">
+    <thead><tr><th>Field</th><th>Type</th><th>Rules</th></tr></thead>
+    <tbody>
+      <tr><td><span class="flag-name">creatorId</span></td><td><span class="flag-val">ObjectId → User</span></td><td>Required. The creator being supported.</td></tr>
+      <tr><td><span class="flag-name">supporterName</span></td><td><span class="flag-val">String</span></td><td>Required, 2–50 chars. Shown publicly.</td></tr>
+      <tr><td><span class="flag-name">supporterEmail</span></td><td><span class="flag-val">String</span></td><td>Required, lowercase. Used to group supporters. Never shown on public endpoints.</td></tr>
+      <tr><td><span class="flag-name">message</span></td><td><span class="flag-val">String</span></td><td>Optional, max 200 chars.</td></tr>
+      <tr><td><span class="flag-name">coffees</span></td><td><span class="flag-val">Number</span></td><td>Integer, 1–5.</td></tr>
+      <tr><td><span class="flag-name">amount</span></td><td><span class="flag-val">Number</span></td><td>Total in <strong>paise</strong> (integer). Computed on the server.</td></tr>
+      <tr><td><span class="flag-name">currency</span></td><td><span class="flag-val">String</span></td><td>Always <code>INR</code>.</td></tr>
+      <tr><td><span class="flag-name">status</span></td><td><span class="flag-val">enum</span></td><td><code>created</code> → <code>paid</code> or <code>failed</code>. Default <code>created</code>.</td></tr>
+      <tr><td><span class="flag-name">razorpayOrderId</span></td><td><span class="flag-val">String</span></td><td>Required, unique.</td></tr>
+      <tr><td><span class="flag-name">razorpayPaymentId</span></td><td><span class="flag-val">String</span></td><td>Set after verification.</td></tr>
+      <tr><td><span class="flag-name">paidAt</span></td><td><span class="flag-val">Date</span></td><td>Set when status becomes <code>paid</code>.</td></tr>
+      <tr><td><span class="flag-name">createdAt / updatedAt</span></td><td><span class="flag-val">Date</span></td><td>Mongoose timestamps.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>RefreshToken (one login session)</h3>
+  <div class="table-wrap">
+  <table class="flag-table">
+    <thead><tr><th>Field</th><th>Type</th><th>Rules</th></tr></thead>
+    <tbody>
+      <tr><td><span class="flag-name">userId</span></td><td><span class="flag-val">ObjectId → User</span></td><td>Required.</td></tr>
+      <tr><td><span class="flag-name">tokenHash</span></td><td><span class="flag-val">String</span></td><td>SHA-256 hash of the refresh token. The raw token is never stored.</td></tr>
+      <tr><td><span class="flag-name">expiresAt</span></td><td><span class="flag-val">Date</span></td><td>Now + 7 days. MongoDB deletes the document automatically after this time.</td></tr>
+      <tr><td><span class="flag-name">createdAt</span></td><td><span class="flag-val">Date</span></td><td>Mongoose timestamp.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Indexes</h3>
+  <div class="table-wrap">
+  <table class="flag-table">
+    <thead><tr><th>Collection</th><th>Index</th><th>Why it exists</th></tr></thead>
+    <tbody>
+      <tr><td>users</td><td><span class="flag-name">{ username: 1 }</span> unique</td><td>Every public page request looks up a creator by username.</td></tr>
+      <tr><td>users</td><td><span class="flag-name">{ email: 1 }</span> unique</td><td>Login lookup and duplicate-account check.</td></tr>
+      <tr><td>supports</td><td><span class="flag-name">{ creatorId: 1, status: 1, createdAt: -1 }</span></td><td>Serves every dashboard and public query: "this creator's paid supports, newest first".</td></tr>
+      <tr><td>supports</td><td><span class="flag-name">{ razorpayOrderId: 1 }</span> unique</td><td>Verify looks up the support by order id. Unique also blocks duplicate orders.</td></tr>
+      <tr><td>refreshtokens</td><td><span class="flag-name">{ tokenHash: 1 }</span> unique</td><td>Refresh and logout look up the session by token hash.</td></tr>
+      <tr><td>refreshtokens</td><td><span class="flag-name">{ expiresAt: 1 }</span> TTL, expireAfterSeconds 0</td><td>Expired sessions are cleaned up by MongoDB, no cron job needed.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="code-label">Mongoose · index definitions</span><button onclick="copyCode(this)" class="code-copy-btn">copy</button></div>
+<pre class="code-pre">supportSchema.<span class="token-command">index</span>({ <span class="token-yaml-key">creatorId</span>: <span class="token-val">1</span>, <span class="token-yaml-key">status</span>: <span class="token-val">1</span>, <span class="token-yaml-key">createdAt</span>: <span class="token-val">-1</span> });
+supportSchema.<span class="token-command">index</span>({ <span class="token-yaml-key">razorpayOrderId</span>: <span class="token-val">1</span> }, { <span class="token-yaml-key">unique</span>: <span class="token-val">true</span> });
+
+refreshTokenSchema.<span class="token-command">index</span>({ <span class="token-yaml-key">tokenHash</span>: <span class="token-val">1</span> }, { <span class="token-yaml-key">unique</span>: <span class="token-val">true</span> });
+refreshTokenSchema.<span class="token-command">index</span>({ <span class="token-yaml-key">expiresAt</span>: <span class="token-val">1</span> }, { <span class="token-yaml-key">expireAfterSeconds</span>: <span class="token-val">0</span> }); <span class="token-comment">// TTL index</span></pre>
+  </div>
+
+  <div class="concept-box">
+    <div class="concept-box-label">Key concept</div>
+    <p class="concept-box-text">A compound index works left to right. <strong>{ creatorId, status, createdAt }</strong> serves a query that filters on creatorId and status and sorts by createdAt, all in one index scan. A query that filters only on <strong>status</strong> cannot use it, because it skips the first field.</p>
+  </div>
+
+  <div class="quiz-box">
+    <p class="quiz-question">Why is <code style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.12);color:#F4A261">amount</code> stored in paise as an integer instead of rupees with decimals?</p>
+    <div class="quiz-options" id="quiz-ent-1">
+      <button onclick="answerQuiz('quiz-ent-1', this, false)" class="quiz-option">A &nbsp;—&nbsp; Because MongoDB cannot store decimal numbers</button>
+      <button onclick="answerQuiz('quiz-ent-1', this, true)" class="quiz-option">B &nbsp;—&nbsp; Integers avoid floating-point rounding errors, and Razorpay expects paise anyway</button>
+    </div>
+    <div class="quiz-feedback hidden" id="quiz-ent-1-feedback"></div>
+  </div>
+
+  <div class="quiz-box">
+    <p class="quiz-question">A query filters <code style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.12);color:#F4A261">{ creatorId, status: "paid" }</code> and sorts by <code style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.12);color:#F4A261">createdAt: -1</code>. Does the compound index cover it?</p>
+    <div class="quiz-options" id="quiz-ent-2">
+      <button onclick="answerQuiz('quiz-ent-2', this, true)" class="quiz-option">A &nbsp;—&nbsp; Yes, filter and sort both follow the index's field order</button>
+      <button onclick="answerQuiz('quiz-ent-2', this, false)" class="quiz-option">B &nbsp;—&nbsp; No, the sort needs its own separate index on createdAt</button>
+    </div>
+    <div class="quiz-feedback hidden" id="quiz-ent-2-feedback"></div>
+  </div>
+</section>
+
+<!-- 03 ENDPOINTS -->
+<section class="section-block" id="endpoints">
+  <div class="section-header">
+    <div class="section-num-big">03</div>
+    <div class="section-header-text">
+      <div class="section-title">API endpoints</div>
+      <div class="section-subtitle">14 endpoints across four modules, all under /api</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+  <table class="flag-table">
+    <thead><tr><th>Method</th><th>Path</th><th>Access</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr class="group-row"><td colspan="4">Auth</td></tr>
+      <tr><td><span class="badge badge-accent">POST</span></td><td><span class="flag-name">/api/auth/register</span></td><td>Public</td><td>Create a creator account.</td></tr>
+      <tr><td><span class="badge badge-accent">POST</span></td><td><span class="flag-name">/api/auth/login</span></td><td>Public</td><td>Return access token, set refresh token cookie.</td></tr>
+      <tr><td><span class="badge badge-accent">POST</span></td><td><span class="flag-name">/api/auth/refresh</span></td><td>Refresh cookie</td><td>Rotate refresh token, return new access token.</td></tr>
+      <tr><td><span class="badge badge-accent">POST</span></td><td><span class="flag-name">/api/auth/logout</span></td><td>Refresh cookie</td><td>Revoke the session and clear the cookie.</td></tr>
+      <tr><td><span class="badge badge-green">GET</span></td><td><span class="flag-name">/api/auth/me</span></td><td>Access token</td><td>Current creator's profile.</td></tr>
+      <tr class="group-row"><td colspan="4">Creators</td></tr>
+      <tr><td><span class="badge badge-gold">PATCH</span></td><td><span class="flag-name">/api/creators/me</span></td><td>Access token</td><td>Update name, bio, avatarUrl, coffeePrice.</td></tr>
+      <tr><td><span class="badge badge-green">GET</span></td><td><span class="flag-name">/api/creators/:username</span></td><td>Public · cached</td><td>Public page: profile, stats, 10 recent supports.</td></tr>
+      <tr><td><span class="badge badge-green">GET</span></td><td><span class="flag-name">/api/creators/:username/leaderboard</span></td><td>Public · cached</td><td>Top 10 supporters by coffees.</td></tr>
+      <tr class="group-row"><td colspan="4">Payments</td></tr>
+      <tr><td><span class="badge badge-accent">POST</span></td><td><span class="flag-name">/api/payments/order</span></td><td>Public</td><td>Create a Razorpay order and a <code>created</code> support.</td></tr>
+      <tr><td><span class="badge badge-accent">POST</span></td><td><span class="flag-name">/api/payments/verify</span></td><td>Public</td><td>Verify signature, mark support <code>paid</code>, clear cache.</td></tr>
+      <tr class="group-row"><td colspan="4">Dashboard</td></tr>
+      <tr><td><span class="badge badge-green">GET</span></td><td><span class="flag-name">/api/dashboard/summary</span></td><td>Access token</td><td>Totals and averages in one aggregation.</td></tr>
+      <tr><td><span class="badge badge-green">GET</span></td><td><span class="flag-name">/api/dashboard/earnings?days=30</span></td><td>Access token</td><td>Earnings grouped by IST date.</td></tr>
+      <tr><td><span class="badge badge-green">GET</span></td><td><span class="flag-name">/api/dashboard/top-supporters?limit=10</span></td><td>Access token</td><td>Top supporters with email visible.</td></tr>
+      <tr><td><span class="badge badge-green">GET</span></td><td><span class="flag-name">/api/dashboard/supports?page=1&amp;limit=20</span></td><td>Access token</td><td>Paginated list of paid supports, newest first.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Key request and response shapes</h3>
+
+  <div class="badge badge-blue">Login response</div>
+  <div class="code-block">
+    <div class="code-header"><span class="code-label">POST /api/auth/login · 200</span><button onclick="copyCode(this)" class="code-copy-btn">copy</button></div>
+<pre class="code-pre"><span class="token-comment">// Set-Cookie: refreshToken=...; HttpOnly; SameSite=Strict; Path=/api/auth; Max-Age=604800</span>
+{
+  <span class="token-yaml-key">"success"</span>: <span class="token-val">true</span>,
+  <span class="token-yaml-key">"accessToken"</span>: <span class="token-string">"eyJhbGciOi..."</span>,
+  <span class="token-yaml-key">"user"</span>: { <span class="token-yaml-key">"name"</span>: <span class="token-string">"Ankur"</span>, <span class="token-yaml-key">"username"</span>: <span class="token-string">"ankur"</span>, <span class="token-yaml-key">"coffeePrice"</span>: <span class="token-val">50</span> }
+}</pre>
+  </div>
+
+  <div class="badge badge-blue">Create order</div>
+  <div class="code-block">
+    <div class="code-header"><span class="code-label">POST /api/payments/order</span><button onclick="copyCode(this)" class="code-copy-btn">copy</button></div>
+<pre class="code-pre"><span class="token-comment">// Request — note: no amount field. The server computes it.</span>
+{
+  <span class="token-yaml-key">"username"</span>: <span class="token-string">"ankur"</span>,
+  <span class="token-yaml-key">"supporterName"</span>: <span class="token-string">"Riya"</span>,
+  <span class="token-yaml-key">"supporterEmail"</span>: <span class="token-string">"riya@example.com"</span>,
+  <span class="token-yaml-key">"coffees"</span>: <span class="token-val">3</span>,
+  <span class="token-yaml-key">"message"</span>: <span class="token-string">"Your Redis video finally made it click!"</span>
+}
+
+<span class="token-comment">// Response · 201</span>
+{
+  <span class="token-yaml-key">"orderId"</span>: <span class="token-string">"order_PzX91..."</span>,
+  <span class="token-yaml-key">"amount"</span>: <span class="token-val">15000</span>,          <span class="token-comment">// 3 × ₹50 × 100 paise</span>
+  <span class="token-yaml-key">"currency"</span>: <span class="token-string">"INR"</span>,
+  <span class="token-yaml-key">"keyId"</span>: <span class="token-string">"rzp_test_..."</span>
+}</pre>
+  </div>
+
+  <div class="badge badge-blue">Verify payment</div>
+  <div class="code-block">
+    <div class="code-header"><span class="code-label">POST /api/payments/verify</span><button onclick="copyCode(this)" class="code-copy-btn">copy</button></div>
+<pre class="code-pre"><span class="token-comment">// Request — the three values Razorpay Checkout returns to the handler</span>
+{
+  <span class="token-yaml-key">"razorpay_order_id"</span>: <span class="token-string">"order_PzX91..."</span>,
+  <span class="token-yaml-key">"razorpay_payment_id"</span>: <span class="token-string">"pay_PzXa4..."</span>,
+  <span class="token-yaml-key">"razorpay_signature"</span>: <span class="token-string">"9ef4dffbfd84f1318f6739a3ce19f9d85851857ae648f114332d8401e0949a3d"</span>
+}</pre>
+  </div>
+
+  <div class="badge badge-blue">Public page</div>
+  <div class="code-block">
+    <div class="code-header"><span class="code-label">GET /api/creators/ankur · 200 · X-Cache: HIT</span><button onclick="copyCode(this)" class="code-copy-btn">copy</button></div>
+<pre class="code-pre">{
+  <span class="token-yaml-key">"creator"</span>: { <span class="token-yaml-key">"name"</span>: <span class="token-string">"Ankur"</span>, <span class="token-yaml-key">"username"</span>: <span class="token-string">"ankur"</span>, <span class="token-yaml-key">"bio"</span>: <span class="token-string">"..."</span>, <span class="token-yaml-key">"avatarUrl"</span>: <span class="token-string">"..."</span>, <span class="token-yaml-key">"coffeePrice"</span>: <span class="token-val">50</span> },
+  <span class="token-yaml-key">"stats"</span>: { <span class="token-yaml-key">"totalCoffees"</span>: <span class="token-val">412</span>, <span class="token-yaml-key">"supporterCount"</span>: <span class="token-val">167</span> },
+  <span class="token-yaml-key">"recentSupports"</span>: [
+    { <span class="token-yaml-key">"supporterName"</span>: <span class="token-string">"Riya"</span>, <span class="token-yaml-key">"coffees"</span>: <span class="token-val">3</span>, <span class="token-yaml-key">"message"</span>: <span class="token-string">"..."</span>, <span class="token-yaml-key">"paidAt"</span>: <span class="token-string">"2026-09-27T10:14:00Z"</span> }
+  ]
+}</pre>
+  </div>
+
+  <div class="badge badge-blue">Earnings by day</div>
+  <div class="code-block">
+    <div class="code-header"><span class="code-label">GET /api/dashboard/earnings?days=30 · 200</span><button onclick="copyCode(this)" class="code-copy-btn">copy</button></div>
+<pre class="code-pre">{
+  <span class="token-yaml-key">"days"</span>: <span class="token-val">30</span>,
+  <span class="token-yaml-key">"data"</span>: [
+    { <span class="token-yaml-key">"date"</span>: <span class="token-string">"2026-09-25"</span>, <span class="token-yaml-key">"earnings"</span>: <span class="token-val">450</span>, <span class="token-yaml-key">"coffees"</span>: <span class="token-val">9</span>, <span class="token-yaml-key">"supports"</span>: <span class="token-val">4</span> },
+    { <span class="token-yaml-key">"date"</span>: <span class="token-string">"2026-09-27"</span>, <span class="token-yaml-key">"earnings"</span>: <span class="token-val">150</span>, <span class="token-yaml-key">"coffees"</span>: <span class="token-val">3</span>, <span class="token-yaml-key">"supports"</span>: <span class="token-val">1</span> }
+  ]
+}</pre>
+  </div>
+
+  <div class="quiz-box">
+    <p class="quiz-question">Where should the payment amount for a new order come from?</p>
+    <div class="quiz-options" id="quiz-api-1">
+      <button onclick="answerQuiz('quiz-api-1', this, false)" class="quiz-option">A &nbsp;—&nbsp; From the request body, since the frontend already shows the total</button>
+      <button onclick="answerQuiz('quiz-api-1', this, true)" class="quiz-option">B &nbsp;—&nbsp; Computed on the server as coffees × creator's coffeePrice × 100</button>
+    </div>
+    <div class="quiz-feedback hidden" id="quiz-api-1-feedback"></div>
+  </div>
+</section>
+
+<!-- 04 FLOWS -->
+<section class="section-block" id="flows">
+  <div class="section-header">
+    <div class="section-num-big">04</div>
+    <div class="section-header-text">
+      <div class="section-title">Core flows</div>
+      <div class="section-subtitle">The three sequences every student must be able to explain</div>
+    </div>
+  </div>
+
+  <h3>Payment flow</h3>
+  <div class="flow-diagram">
+    <div class="flow-step"><div class="flow-connector"><div class="flow-dot flow-dot-accent"></div><div class="flow-line"></div></div>
+      <div class="flow-content"><div class="flow-title">Supporter picks coffees and submits the form</div><div class="flow-desc">Test page sends username, name, email, message and coffee count to <code>POST /api/payments/order</code>.</div></div></div>
+    <div class="flow-step"><div class="flow-connector"><div class="flow-dot flow-dot-accent"></div><div class="flow-line"></div></div>
+      <div class="flow-content"><div class="flow-title">Server computes the amount and creates a Razorpay order</div><div class="flow-desc">Saves a Support with status <code>created</code> and the returned <code>razorpayOrderId</code>.</div></div></div>
+    <div class="flow-step"><div class="flow-connector"><div class="flow-dot flow-dot-blue"></div><div class="flow-line"></div></div>
+      <div class="flow-content"><div class="flow-title">Razorpay Checkout opens in the browser</div><div class="flow-desc">Supporter pays with a test card or UPI. Checkout returns order id, payment id and signature.</div></div></div>
+    <div class="flow-step"><div class="flow-connector"><div class="flow-dot flow-dot-accent"></div><div class="flow-line"></div></div>
+      <div class="flow-content"><div class="flow-title">Page sends the three values to verify</div><div class="flow-desc">Server computes HMAC-SHA256 of <code>order_id|payment_id</code> using the key secret and compares it with the signature.</div></div></div>
+    <div class="flow-step"><div class="flow-connector"><div class="flow-dot flow-dot-green"></div></div>
+      <div class="flow-content"><div class="flow-title">Match → support is marked paid, cache is cleared</div><div class="flow-desc">Status <code>paid</code>, paymentId and paidAt saved. Page and leaderboard cache keys for that creator are deleted.</div></div></div>
+  </div>
+
+  <div class="warning-box">
+    <div class="warning-box-icon">⚠️</div>
+    <p class="warning-box-text"><strong>Never mark a payment paid because the frontend said so.</strong> The Checkout success callback runs in the supporter's browser, and anyone can call your verify endpoint with made-up ids. Only a matching signature proves Razorpay processed the payment.</p>
+  </div>
+
+  <h3>Token refresh flow</h3>
+  <div class="flow-diagram">
+    <div class="flow-step"><div class="flow-connector"><div class="flow-dot flow-dot-accent"></div><div class="flow-line"></div></div>
+      <div class="flow-content"><div class="flow-title">Access token expires after 15 minutes</div><div class="flow-desc">A protected request returns <code>401</code>.</div></div></div>
+    <div class="flow-step"><div class="flow-connector"><div class="flow-dot flow-dot-accent"></div><div class="flow-line"></div></div>
+      <div class="flow-content"><div class="flow-title">Client calls <code>POST /api/auth/refresh</code></div><div class="flow-desc">The browser attaches the httpOnly refresh cookie automatically.</div></div></div>
+    <div class="flow-step"><div class="flow-connector"><div class="flow-dot flow-dot-blue"></div><div class="flow-line"></div></div>
+      <div class="flow-content"><div class="flow-title">Server verifies the JWT, hashes it, and looks up the hash</div><div class="flow-desc">Found → delete that document. Valid JWT but not found → it was already used, so revoke every session of this user and return <code>401</code>.</div></div></div>
+    <div class="flow-step"><div class="flow-connector"><div class="flow-dot flow-dot-green"></div></div>
+      <div class="flow-content"><div class="flow-title">New refresh token saved, new access token returned</div><div class="flow-desc">Each refresh token works exactly once. That is rotation.</div></div></div>
+  </div>
+
+  <h3>Cache-aside flow for the public page</h3>
+  <div class="scale-diagram">
+    <span class="highlight">GET /api/creators/ankur</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+    Redis GET <span class="highlight">creator:ankur:page</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;├─ <span class="green">HIT → return cached JSON, header X-Cache: HIT (no MongoDB query)</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;└─ <span class="red">MISS → query MongoDB + aggregation → Redis SET with 300s TTL → X-Cache: MISS</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+    <span class="highlight">Payment verified or profile updated</span> → Redis DEL <span class="highlight">creator:ankur:page</span> (+ <span class="highlight">:leaderboard</span>)
+  </div>
+
+  <div class="quiz-box">
+    <p class="quiz-question">A refresh token has a valid JWT signature, but its hash is not in the database. What does that most likely mean?</p>
+    <div class="quiz-options" id="quiz-flow-1">
+      <button onclick="answerQuiz('quiz-flow-1', this, true)" class="quiz-option">A &nbsp;—&nbsp; It was already used once, so it may be stolen. Revoke all of the user's sessions.</button>
+      <button onclick="answerQuiz('quiz-flow-1', this, false)" class="quiz-option">B &nbsp;—&nbsp; The database write was slow. Retry the lookup and issue a new token.</button>
+    </div>
+    <div class="quiz-feedback hidden" id="quiz-flow-1-feedback"></div>
+  </div>
+
+  <div class="quiz-box">
+    <p class="quiz-question">When should the cached creator page be removed from Redis?</p>
+    <div class="quiz-options" id="quiz-flow-2">
+      <button onclick="answerQuiz('quiz-flow-2', this, false)" class="quiz-option">A &nbsp;—&nbsp; Only when the 300-second TTL expires</button>
+      <button onclick="answerQuiz('quiz-flow-2', this, true)" class="quiz-option">B &nbsp;—&nbsp; When the TTL expires, and immediately after a verified payment or profile update</button>
+    </div>
+    <div class="quiz-feedback hidden" id="quiz-flow-2-feedback"></div>
+  </div>
+</section>
+
+<!-- 05 FUNCTIONAL -->
+<section class="section-block" id="functional">
+  <div class="section-header">
+    <div class="section-num-big">05</div>
+    <div class="section-header-text">
+      <div class="section-title">Functional requirements</div>
+      <div class="section-subtitle">What the system must do. "Must" items are required, "Should" items are stretch goals.</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+  <table class="flag-table">
+    <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+    <tbody>
+      <tr class="group-row"><td colspan="3">Auth &amp; sessions</td></tr>
+      <tr><td class="req-id">FR-01</td><td>A creator can register with name, username, email and password. Duplicate username or email returns <code>409</code>.</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-02</td><td>Login returns a 15-minute access token in the body and sets a 7-day refresh token as an httpOnly cookie. The refresh token's hash is saved in RefreshToken.</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-03</td><td>Protected routes read the access token from <code>Authorization: Bearer</code>. Missing, invalid or expired tokens return <code>401</code>.</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-04</td><td>Refresh deletes the old refresh token and issues a new access + refresh pair (rotation).</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-05</td><td>If a refresh token has a valid signature but is not in the database, all refresh tokens of that user are deleted and <code>401</code> is returned (reuse detection).</td><td><span class="badge badge-gold">Should</span></td></tr>
+      <tr><td class="req-id">FR-06</td><td>Logout deletes the current refresh token and clears the cookie.</td><td><span class="badge badge-accent">Must</span></td></tr>
+
+      <tr class="group-row"><td colspan="3">Creator profile &amp; public page</td></tr>
+      <tr><td class="req-id">FR-07</td><td>A creator can update name, bio, avatarUrl and coffeePrice. Username and email cannot be changed.</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-08</td><td>The public page returns the creator's profile, total coffees, supporter count and the 10 most recent paid supports. Supporter emails are never included.</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-09</td><td>The public leaderboard returns the top 10 supporters, grouped by supporter email, sorted by total coffees. It shows name and coffees only.</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-10</td><td>An unknown username returns <code>404</code> on every creator and payment endpoint.</td><td><span class="badge badge-accent">Must</span></td></tr>
+
+      <tr class="group-row"><td colspan="3">Payments</td></tr>
+      <tr><td class="req-id">FR-11</td><td>A supporter can buy 1–5 coffees with a name, email and optional message (max 200 chars), without an account.</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-12</td><td>The server computes <code>amount = coffees × coffeePrice × 100</code>. Any amount sent by the client is ignored.</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-13</td><td>Creating an order calls Razorpay, saves a Support with status <code>created</code>, and returns orderId, amount, currency and the public keyId.</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-14</td><td>Verify recomputes the HMAC-SHA256 signature. On match, the support becomes <code>paid</code> with paymentId and paidAt. On mismatch, it becomes <code>failed</code> and the API returns <code>400</code>.</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-15</td><td>Verifying an already-paid order returns <code>200</code> and changes nothing (idempotent).</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-16</td><td>Only supports with status <code>paid</code> count anywhere: public page, leaderboard and dashboard.</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-17</td><td>Express serves one static test page that creates an order, opens Razorpay Checkout and calls verify.</td><td><span class="badge badge-accent">Must</span></td></tr>
+
+      <tr class="group-row"><td colspan="3">Dashboard (aggregation)</td></tr>
+      <tr><td class="req-id">FR-18</td><td>Summary returns total earnings (₹), total coffees, total supports, unique supporters and average coffees per support (1 decimal) from a single pipeline.</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-19</td><td>Earnings by day covers the last N days (default 30, max 90), grouped by date in <code>Asia/Kolkata</code>, sorted oldest to newest.</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-20</td><td>Top supporters (default 10, max 50) returns name, email, total coffees, total amount and number of supports.</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-21</td><td>The supports list is paginated (default 20, max 50), newest first, and returns the total count along with the page.</td><td><span class="badge badge-accent">Must</span></td></tr>
+
+      <tr class="group-row"><td colspan="3">Caching</td></tr>
+      <tr><td class="req-id">FR-22</td><td>The public page and leaderboard use cache-aside in Redis with a 300-second TTL, keys <code>creator:{username}:page</code> and <code>creator:{username}:leaderboard</code>.</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-23</td><td>A successful verify deletes both cache keys for that creator. A profile update deletes the page key.</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-24</td><td>Cached endpoints return an <code>X-Cache: HIT</code> or <code>X-Cache: MISS</code> header.</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-25</td><td>Dashboard endpoints are not cached. The creator must always see fresh numbers after a payment.</td><td><span class="badge badge-accent">Must</span></td></tr>
+
+      <tr class="group-row"><td colspan="3">Indexing</td></tr>
+      <tr><td class="req-id">FR-26</td><td>All indexes in section 02 are defined in the Mongoose schemas.</td><td><span class="badge badge-accent">Must</span></td></tr>
+      <tr><td class="req-id">FR-27</td><td><code>npm run seed</code> inserts about 50,000 paid supports across 3 creators spread over 90 days.</td><td><span class="badge badge-gold">Should</span></td></tr>
+      <tr><td class="req-id">FR-28</td><td>The supports-list query is run with <code>explain("executionStats")</code> before and after the compound index, and <code>totalDocsExamined</code> plus the plan stage (COLLSCAN vs IXSCAN) are recorded in the README.</td><td><span class="badge badge-gold">Should</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="quiz-box">
+    <p class="quiz-question">Why must <code style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.12);color:#F4A261">$match</code> be the first stage of every dashboard pipeline?</p>
+    <div class="quiz-options" id="quiz-fr-1">
+      <button onclick="answerQuiz('quiz-fr-1', this, true)" class="quiz-option">A &nbsp;—&nbsp; So MongoDB can use the index and later stages process fewer documents</button>
+      <button onclick="answerQuiz('quiz-fr-1', this, false)" class="quiz-option">B &nbsp;—&nbsp; Because $group throws an error if it comes before $match</button>
+    </div>
+    <div class="quiz-feedback hidden" id="quiz-fr-1-feedback"></div>
+  </div>
+</section>
+
+<!-- 06 NON-FUNCTIONAL -->
+<section class="section-block" id="non-functional">
+  <div class="section-header">
+    <div class="section-num-big">06</div>
+    <div class="section-header-text">
+      <div class="section-title">Non-functional requirements</div>
+      <div class="section-subtitle">How well the system must do it: security, performance, reliability, code quality</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+  <table class="flag-table">
+    <thead><tr><th>ID</th><th>Category</th><th>Requirement</th></tr></thead>
+    <tbody>
+      <tr><td class="req-id">NFR-01</td><td>Security</td><td>Passwords are hashed with bcrypt (cost 10). Password hashes are never returned in any response.</td></tr>
+      <tr><td class="req-id">NFR-02</td><td>Security</td><td>The refresh cookie is <code>httpOnly</code>, <code>SameSite=Strict</code>, scoped to <code>/api/auth</code>, and <code>Secure</code> in production. Access and refresh tokens use different secrets.</td></tr>
+      <tr><td class="req-id">NFR-03</td><td>Security</td><td>Signature comparison uses <code>crypto.timingSafeEqual</code>. The Razorpay key secret never leaves the server.</td></tr>
+      <tr><td class="req-id">NFR-04</td><td>Security</td><td>All secrets (JWT secrets, Razorpay keys, Mongo and Redis URLs) come from <code>.env</code>. A <code>.env.example</code> is committed; <code>.env</code> is not.</td></tr>
+      <tr><td class="req-id">NFR-05</td><td>Performance</td><td>A cache hit is served from Redis without any MongoDB query. This is verifiable from the HIT/MISS logs.</td></tr>
+      <tr><td class="req-id">NFR-06</td><td>Performance</td><td>Every query on <code>supports</code> uses an index (IXSCAN, never COLLSCAN). Pipelines start with a <code>$match</code> on creatorId and status.</td></tr>
+      <tr><td class="req-id">NFR-07</td><td>Reliability</td><td>If Redis is down, cached endpoints fall back to MongoDB. A cache failure never turns into a <code>500</code>.</td></tr>
+      <tr><td class="req-id">NFR-08</td><td>Reliability</td><td>A support can only move from <code>created</code> to <code>paid</code> or <code>failed</code>. A paid support never changes again.</td></tr>
+      <tr><td class="req-id">NFR-09</td><td>Data integrity</td><td>Money is stored as integer paise and converted to rupees only in responses. Timestamps are stored in UTC and grouped in IST.</td></tr>
+      <tr><td class="req-id">NFR-10</td><td>API quality</td><td>Every request body and query param is validated (express-validator or zod). Errors use one shape: <code>{ success: false, message }</code> with the correct status code.</td></tr>
+      <tr><td class="req-id">NFR-11</td><td>Maintainability</td><td>Code is layered into routes, controllers, services and models. Razorpay and Redis clients are created once and reused.</td></tr>
+      <tr><td class="req-id">NFR-12</td><td>Observability</td><td>The server logs every cache HIT/MISS and every verify outcome (paid, failed, already paid) with the order id.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="quiz-box">
+    <p class="quiz-question">Redis goes down while a supporter opens a creator's page. What should the API do?</p>
+    <div class="quiz-options" id="quiz-nfr-1">
+      <button onclick="answerQuiz('quiz-nfr-1', this, false)" class="quiz-option">A &nbsp;—&nbsp; Return 500, since the cache layer is unavailable</button>
+      <button onclick="answerQuiz('quiz-nfr-1', this, true)" class="quiz-option">B &nbsp;—&nbsp; Skip the cache and serve the page straight from MongoDB</button>
+    </div>
+    <div class="quiz-feedback hidden" id="quiz-nfr-1-feedback"></div>
+  </div>
+</section>
+
+<!-- 07 OUT OF SCOPE -->
+<section class="section-block" id="out-of-scope">
+  <div class="section-header">
+    <div class="section-num-big">07</div>
+    <div class="section-header-text">
+      <div class="section-title">Out of scope</div>
+      <div class="section-subtitle">Deliberately not built in these 4 days, so the time goes to the five target topics</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+  <table class="compare-table">
+    <thead><tr><th>Not building</th><th>Why, and what a real product would do</th></tr></thead>
+    <tbody>
+      <tr><td class="cell-title">Supporter accounts</td><td class="cell-muted">Supporters pay as guests. Real products let supporters log in and see their history.</td></tr>
+      <tr><td class="cell-title">Razorpay webhooks</td><td class="cell-muted">If the supporter closes the tab after paying, verify never runs. Production systems also listen to the <code>payment.captured</code> webhook. A good next iteration.</td></tr>
+      <tr><td class="cell-title">Refunds and payouts</td><td class="cell-muted">No refunds, and no settlement to the creator's bank account (Razorpay Route). Money stays in one test merchant account.</td></tr>
+      <tr><td class="cell-title">Memberships / subscriptions</td><td class="cell-muted">Only one-time payments. Recurring payments need Razorpay Subscriptions.</td></tr>
+      <tr><td class="cell-title">Email / SMS notifications</td><td class="cell-muted">No "you got a coffee" emails or receipts.</td></tr>
+      <tr><td class="cell-title">Password reset, email verification, OAuth</td><td class="cell-muted">Email + password login only.</td></tr>
+      <tr><td class="cell-title">Image upload</td><td class="cell-muted"><code>avatarUrl</code> is a plain URL string. No Multer, no ImageKit.</td></tr>
+      <tr><td class="cell-title">Rate limiting, admin panel, message moderation</td><td class="cell-muted">Important in production, not part of this practice set.</td></tr>
+      <tr><td class="cell-title">Multi-currency and GST invoices</td><td class="cell-muted">INR only, no tax handling.</td></tr>
+      <tr><td class="cell-title">Zero-filled chart data</td><td class="cell-muted">Days with no earnings are simply missing from the earnings response. Filling gaps is a frontend concern.</td></tr>
+      <tr><td class="cell-title">Full frontend</td><td class="cell-muted">One static test page for Checkout. Everything else is tested with Postman.</td></tr>
+      <tr><td class="cell-title">Deployment, Docker, CI, automated tests</td><td class="cell-muted">Runs locally with local or free-tier MongoDB and Redis.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- 08 PLAN -->
+<section class="section-block" id="plan">
+  <div class="section-header">
+    <div class="section-num-big">08</div>
+    <div class="section-header-text">
+      <div class="section-title">4-day build plan</div>
+      <div class="section-subtitle">About 1.5 effective hours of building per day. The rest of the 3-hour class is for doubts and re-explanation.</div>
+    </div>
+  </div>
+
+  <div class="day-grid">
+    <div class="day-card">
+      <span class="badge badge-accent">Day 1</span>
+      <h5>Models &amp; sessions</h5>
+      <ul>
+        <li>Project structure, env config</li>
+        <li>User, Support, RefreshToken models with all indexes</li>
+        <li>Register, login, refresh with rotation, logout, me</li>
+      </ul>
+    </div>
+    <div class="day-card">
+      <span class="badge badge-blue">Day 2</span>
+      <h5>Payments</h5>
+      <ul>
+        <li>Profile update endpoint</li>
+        <li>Create order with server-side amount</li>
+        <li>Static test page with Checkout</li>
+        <li>Signature verify, idempotency</li>
+      </ul>
+    </div>
+    <div class="day-card">
+      <span class="badge badge-gold">Day 3</span>
+      <h5>Aggregation &amp; indexes</h5>
+      <ul>
+        <li>Seed 50k supports</li>
+        <li>Summary, earnings by day, top supporters, supports list</li>
+        <li><code>explain()</code> before/after</li>
+      </ul>
+    </div>
+    <div class="day-card">
+      <span class="badge badge-green">Day 4</span>
+      <h5>Caching &amp; wrap-up</h5>
+      <ul>
+        <li>Public page + leaderboard</li>
+        <li>Redis cache-aside, X-Cache header</li>
+        <li>Invalidation on verify and profile update</li>
+        <li>Redis-down fallback, end-to-end test</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <div class="note-box-icon">💡</div>
+    <p class="note-box-text">If Day 1 or 2 runs over, drop the <strong>Should</strong> items first (FR-05, FR-27, FR-28). Every <strong>Must</strong> item fits in the 6 hours only if the seed script is written quickly or shared.</p>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <span>Sheryians Coding School · Buy Me a Coffee · SRS v1.0</span>
+  <span>Node · Express · MongoDB · Redis · Razorpay</span>
+</footer>
+
+</div>
+</main>
+</div>
+
+<script>
+function copyCode(btn) {
+  var pre = btn.closest('.code-block').querySelector('pre');
+  var text = pre.innerText;
+  var done = function () { btn.textContent = 'copied'; setTimeout(function () { btn.textContent = 'copy'; }, 1500); };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done(); });
+    } else { fallbackCopy(text); done(); }
+  } catch (e) { fallbackCopy(text); done(); }
+}
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); } catch (e) {}
+  document.body.removeChild(ta);
+}
+function answerQuiz(quizId, btn, isCorrect) {
+  var container = document.getElementById(quizId);
+  var feedback = document.getElementById(quizId + '-feedback');
+  container.querySelectorAll('.quiz-option').forEach(function (b) { b.disabled = true; b.style.opacity = '0.6'; });
+  if (isCorrect) {
+    btn.classList.add('correct');
+    feedback.textContent = '✓ Correct!';
+    feedback.className = 'quiz-feedback correct';
+  } else {
+    btn.classList.add('incorrect');
+    feedback.textContent = '✗ Not quite — try reviewing that section.';
+    feedback.className = 'quiz-feedback incorrect';
+  }
+}
+(function () {
+  var links = Array.prototype.slice.call(document.querySelectorAll('.nav-link'));
+  var sections = links.map(function (l) { return document.querySelector(l.getAttribute('href')); }).filter(Boolean);
+  if (!('IntersectionObserver' in window)) return;
+  var obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        links.forEach(function (l) { l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id); });
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  sections.forEach(function (s) { obs.observe(s); });
+})();
+</script>
+</body>
+</html>

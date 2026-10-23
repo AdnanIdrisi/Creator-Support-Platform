@@ -1,0 +1,40 @@
+import { UserModel } from "../models/user.model.js";
+
+/** @typedef {import("../types/user.js").User} User */
+/** @typedef {import("../types/user.js").RegisterInput} RegisterInput */
+
+/**
+ * Creates and persists a new user (password is hashed by the model hook).
+ * @param {RegisterInput} input
+ * @returns {Promise<User>}
+ */
+export async function createUser(input) {
+    return UserModel.create(input);
+}
+
+/**
+ * Finds a user by email, including the password hash.
+ * @param {string} email
+ * @returns {Promise<User | null>}
+ */
+export async function findUserByEmail(email) {
+    return UserModel.findOne({ email: email.toLowerCase() }).select("+password");
+}
+
+/**
+ * Finds a user by id.
+ * @param {string} id
+ * @returns {Promise<User | null>}
+ */
+export async function findUserById(id) {
+    return UserModel.findById(id);
+}
+
+/**
+ * Finds a user by username.
+ * @param {string} username 
+ * @returns {Promise<User | null>}
+ */
+export async function findUserByUsername(username) {
+    return UserModel.findOne({ username: username.toLowerCase() });
+}
